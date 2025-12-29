@@ -4,15 +4,41 @@ from sklearn.preprocessing import StandardScaler
 import pandas as pd
 import time
 from sklearn.datasets import fetch_california_housing
-st.title('🏠House Price prediction using ML')
+from sklearn.ensemble import RandomForestRegressor
+st.title('🏠 House Price prediction using ML')
+st.image('https://i.pinimg.com/originals/f1/be/c8/f1bec81e20d80cd36c82379af920a4e9.gif')
 
-st.image('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRvQdqIasHkDTf5733FK14z5mPQ18VPhg_R_Q&s')
+df = pd.read_csv('house_data.csv')
+X = df.iloc[:,:-3]
+y = df.iloc[:,-1]
 
-data = fetch_california_housing()
+st.sidebar.title('🏠 Select House features')
+st.sidebar.image('https://i.pinimg.com/originals/f1/be/c8/f1bec81e20d80cd36c82379af920a4e9.gif')
+all_value = []
+for i in X:
+  min_value = int(X[i].min())
+  max_value = int(X[i].max())
+  ans = st.sidebar.slider(f'Select {i} value',min_value, max_value)
+  all_value.append(ans)
 
-X = pd.DataFrame(data['data'],
-            columns = data['feature_names'])
+# st.write(all_value)
 
-final_X = X.iloc[:,:-2]
 scaler = StandardScaler()
-scaled_X = scaler.fit_transform(final_X)
+scaled_X = scaler.fit_transform(X)
+final_value = scaler.transform([all_value])
+
+@st.cache_data
+def model_run(X,y):
+  model = RandomForestRegressor()
+  model.fit(X,y)
+  return model
+
+model = model_run(X,y)  
+house_price = model.predict(final_value)[0]
+
+with st.spinner('Predicting House price'):
+  time.sleep(1)
+msg = f'''House price is: $ {round(house_price*100000,2)}'''
+st.success(msg)
+
+st.markdown('''**Design and Developed by: Ankush verma**''')
